@@ -39,4 +39,4 @@ ENV ADMIN_PASSWORD=${ADMIN_PASSWORD}
 # Aplica migrations usando a URL do ENV
 RUN npx prisma migrate deploy
 
-CMD ["bun", "run", "dev:bun"]
+CMD ["bun", "run", "dev"]
