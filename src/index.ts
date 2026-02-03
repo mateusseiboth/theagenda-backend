@@ -1,12 +1,47 @@
 import "reflect-metadata";
+import { execSync } from "child_process";
 import cors from "cors";
 import express from "express";
+import { existsSync, unlinkSync } from "fs";
+import { join } from "path";
 import { config } from "./config";
 import prismaClient from "./database/prisma";
 import routes from "./http/routes";
+import { CronService } from "./services/CronService";
+import { WhatsAppService } from "./services/WhatsAppService";
 
 
 global._console = console.log;
+
+// Limpar processos e lockfiles do WhatsApp ANTES de qualquer coisa
+const cleanupWhatsAppLocks = () => {
+    try {
+        // Matar processos do Chromium relacionados ao WhatsApp
+        try {
+            execSync('pkill -9 -f "whatsapp-session"', { stdio: 'ignore' });
+            console.log('🧹 Processos do WhatsApp encerrados');
+        } catch (error) {
+            // Ignorar erro se não houver processos para matar
+        }
+
+        // Remover lockfiles
+        const sessionPath = './whatsapp-session/session';
+        const locks = ['SingletonLock', 'lockfile'];
+
+        locks.forEach(lockFile => {
+            const lockPath = join(sessionPath, lockFile);
+            if (existsSync(lockPath)) {
+                unlinkSync(lockPath);
+                console.log(`🧹 ${lockFile} removido`);
+            }
+        });
+    } catch (error) {
+        console.warn('⚠️  Erro ao limpar lockfiles:', error);
+    }
+};
+
+// Executar limpeza imediatamente
+cleanupWhatsAppLocks();
 
 const app = express();
 
@@ -38,6 +73,17 @@ const startServer = async () => {
             console.log(`🚀 Servidor rodando na porta ${config.port}`);
             console.log(`📝 Ambiente: ${config.nodeEnv}`);
             console.log(`🔗 http://localhost:${config.port}`);
+
+            // Inicializar WhatsApp automaticamente
+            console.log('\n📱 Inicializando WhatsApp...');
+            const whatsappService = WhatsAppService.getInstance();
+            whatsappService.initialize().catch(err => {
+                console.error('❌ Erro ao inicializar WhatsApp:', err);
+            });
+
+            // Iniciar cron jobs
+            const cronService = CronService.getInstance();
+            cronService.start();
         });
     } catch (error) {
         console.error("❌ Erro ao iniciar servidor:", error);
@@ -48,16 +94,31 @@ const startServer = async () => {
 startServer();
 
 // Graceful shutdown
-process.on("SIGINT", async () => {
-    console.log("\n🛑 Encerrando servidor...");
-    await prismaClient.$disconnect();
-    process.exit(0);
-});
+const gracefulShutdown = async (signal: string) => {
+    console.log(`\n🛑 Recebido sinal ${signal}, encerrando servidor...`);
 
-process.on("SIGTERM", async () => {
-    console.log("\n🛑 Encerrando servidor...");
-    await prismaClient.$disconnect();
-    process.exit(0);
-});
+    try {
+        // Encerrar WhatsApp
+        const whatsappService = WhatsAppService.getInstance();
+        await whatsappService.disconnect();
+
+        // Parar cron jobs
+        const cronService = CronService.getInstance();
+        cronService.stop();
+
+        // Desconectar banco de dados
+        await prismaClient.$disconnect();
+
+        console.log("✅ Servidor encerrado com sucesso");
+        process.exit(0);
+    } catch (error) {
+        console.error("❌ Erro ao encerrar servidor:", error);
+        process.exit(1);
+    }
+};
+
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+process.on("SIGUSR2", () => gracefulShutdown("SIGUSR2")); // nodemon restart
 
 export default app;

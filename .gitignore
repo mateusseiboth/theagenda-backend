@@ -10,3 +10,8 @@ coverage
 .idea
 *.swp
 *.swo
+
+# WhatsApp session data
+whatsapp-session/
+.wwebjs_auth/
+.wwebjs_cache/

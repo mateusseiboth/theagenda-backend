@@ -236,6 +236,40 @@ export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>
 }
 
+export type EnumWhatsAppMessageTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.WhatsAppMessageType | Prisma.EnumWhatsAppMessageTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.WhatsAppMessageType[] | Prisma.ListEnumWhatsAppMessageTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.WhatsAppMessageType[] | Prisma.ListEnumWhatsAppMessageTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumWhatsAppMessageTypeFilter<$PrismaModel> | $Enums.WhatsAppMessageType
+}
+
+export type EnumWhatsAppMessageStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.WhatsAppMessageStatus | Prisma.EnumWhatsAppMessageStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.WhatsAppMessageStatus[] | Prisma.ListEnumWhatsAppMessageStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.WhatsAppMessageStatus[] | Prisma.ListEnumWhatsAppMessageStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumWhatsAppMessageStatusFilter<$PrismaModel> | $Enums.WhatsAppMessageStatus
+}
+
+export type EnumWhatsAppMessageTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.WhatsAppMessageType | Prisma.EnumWhatsAppMessageTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.WhatsAppMessageType[] | Prisma.ListEnumWhatsAppMessageTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.WhatsAppMessageType[] | Prisma.ListEnumWhatsAppMessageTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumWhatsAppMessageTypeWithAggregatesFilter<$PrismaModel> | $Enums.WhatsAppMessageType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumWhatsAppMessageTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumWhatsAppMessageTypeFilter<$PrismaModel>
+}
+
+export type EnumWhatsAppMessageStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.WhatsAppMessageStatus | Prisma.EnumWhatsAppMessageStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.WhatsAppMessageStatus[] | Prisma.ListEnumWhatsAppMessageStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.WhatsAppMessageStatus[] | Prisma.ListEnumWhatsAppMessageStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumWhatsAppMessageStatusWithAggregatesFilter<$PrismaModel> | $Enums.WhatsAppMessageStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumWhatsAppMessageStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumWhatsAppMessageStatusFilter<$PrismaModel>
+}
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -469,6 +503,40 @@ export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _min?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>
   _max?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumWhatsAppMessageTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.WhatsAppMessageType | Prisma.EnumWhatsAppMessageTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.WhatsAppMessageType[] | Prisma.ListEnumWhatsAppMessageTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.WhatsAppMessageType[] | Prisma.ListEnumWhatsAppMessageTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumWhatsAppMessageTypeFilter<$PrismaModel> | $Enums.WhatsAppMessageType
+}
+
+export type NestedEnumWhatsAppMessageStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.WhatsAppMessageStatus | Prisma.EnumWhatsAppMessageStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.WhatsAppMessageStatus[] | Prisma.ListEnumWhatsAppMessageStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.WhatsAppMessageStatus[] | Prisma.ListEnumWhatsAppMessageStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumWhatsAppMessageStatusFilter<$PrismaModel> | $Enums.WhatsAppMessageStatus
+}
+
+export type NestedEnumWhatsAppMessageTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.WhatsAppMessageType | Prisma.EnumWhatsAppMessageTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.WhatsAppMessageType[] | Prisma.ListEnumWhatsAppMessageTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.WhatsAppMessageType[] | Prisma.ListEnumWhatsAppMessageTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumWhatsAppMessageTypeWithAggregatesFilter<$PrismaModel> | $Enums.WhatsAppMessageType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumWhatsAppMessageTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumWhatsAppMessageTypeFilter<$PrismaModel>
+}
+
+export type NestedEnumWhatsAppMessageStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.WhatsAppMessageStatus | Prisma.EnumWhatsAppMessageStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.WhatsAppMessageStatus[] | Prisma.ListEnumWhatsAppMessageStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.WhatsAppMessageStatus[] | Prisma.ListEnumWhatsAppMessageStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumWhatsAppMessageStatusWithAggregatesFilter<$PrismaModel> | $Enums.WhatsAppMessageStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumWhatsAppMessageStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumWhatsAppMessageStatusFilter<$PrismaModel>
 }
 
 

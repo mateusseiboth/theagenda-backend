@@ -387,7 +387,8 @@ export const ModelName = {
   User: 'User',
   Specialty: 'Specialty',
   Appointment: 'Appointment',
-  Config: 'Config'
+  Config: 'Config',
+  WhatsAppLog: 'WhatsAppLog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -403,7 +404,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "specialty" | "appointment" | "config"
+    modelProps: "user" | "specialty" | "appointment" | "config" | "whatsAppLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -703,6 +704,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    WhatsAppLog: {
+      payload: Prisma.$WhatsAppLogPayload<ExtArgs>
+      fields: Prisma.WhatsAppLogFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.WhatsAppLogFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppLogPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.WhatsAppLogFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppLogPayload>
+        }
+        findFirst: {
+          args: Prisma.WhatsAppLogFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppLogPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.WhatsAppLogFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppLogPayload>
+        }
+        findMany: {
+          args: Prisma.WhatsAppLogFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppLogPayload>[]
+        }
+        create: {
+          args: Prisma.WhatsAppLogCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppLogPayload>
+        }
+        createMany: {
+          args: Prisma.WhatsAppLogCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.WhatsAppLogCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppLogPayload>[]
+        }
+        delete: {
+          args: Prisma.WhatsAppLogDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppLogPayload>
+        }
+        update: {
+          args: Prisma.WhatsAppLogUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppLogPayload>
+        }
+        deleteMany: {
+          args: Prisma.WhatsAppLogDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.WhatsAppLogUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.WhatsAppLogUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppLogPayload>[]
+        }
+        upsert: {
+          args: Prisma.WhatsAppLogUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsAppLogPayload>
+        }
+        aggregate: {
+          args: Prisma.WhatsAppLogAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateWhatsAppLog>
+        }
+        groupBy: {
+          args: Prisma.WhatsAppLogGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WhatsAppLogGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.WhatsAppLogCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WhatsAppLogCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -817,6 +892,24 @@ export const ConfigScalarFieldEnum = {
 } as const
 
 export type ConfigScalarFieldEnum = (typeof ConfigScalarFieldEnum)[keyof typeof ConfigScalarFieldEnum]
+
+
+export const WhatsAppLogScalarFieldEnum = {
+  id: 'id',
+  phone: 'phone',
+  message: 'message',
+  messageType: 'messageType',
+  status: 'status',
+  appointmentId: 'appointmentId',
+  error: 'error',
+  sentAt: 'sentAt',
+  deliveredAt: 'deliveredAt',
+  readAt: 'readAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WhatsAppLogScalarFieldEnum = (typeof WhatsAppLogScalarFieldEnum)[keyof typeof WhatsAppLogScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -939,6 +1032,34 @@ export type EnumAppointmentStatusFieldRefInput<$PrismaModel> = FieldRefInputType
 export type ListEnumAppointmentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AppointmentStatus[]'>
     
 
+
+/**
+ * Reference to a field of type 'WhatsAppMessageType'
+ */
+export type EnumWhatsAppMessageTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'WhatsAppMessageType'>
+    
+
+
+/**
+ * Reference to a field of type 'WhatsAppMessageType[]'
+ */
+export type ListEnumWhatsAppMessageTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'WhatsAppMessageType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'WhatsAppMessageStatus'
+ */
+export type EnumWhatsAppMessageStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'WhatsAppMessageStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'WhatsAppMessageStatus[]'
+ */
+export type ListEnumWhatsAppMessageStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'WhatsAppMessageStatus[]'>
+    
+
 /**
  * Batch Payload for updateMany & deleteMany & createMany
  */
@@ -1038,6 +1159,7 @@ export type GlobalOmitConfig = {
   specialty?: Prisma.SpecialtyOmit
   appointment?: Prisma.AppointmentOmit
   config?: Prisma.ConfigOmit
+  whatsAppLog?: Prisma.WhatsAppLogOmit
 }
 
 /* Types for Logging */

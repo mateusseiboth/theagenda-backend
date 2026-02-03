@@ -54,7 +54,8 @@ export const ModelName = {
   User: 'User',
   Specialty: 'Specialty',
   Appointment: 'Appointment',
-  Config: 'Config'
+  Config: 'Config',
+  WhatsAppLog: 'WhatsAppLog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -148,6 +149,24 @@ export const ConfigScalarFieldEnum = {
 } as const
 
 export type ConfigScalarFieldEnum = (typeof ConfigScalarFieldEnum)[keyof typeof ConfigScalarFieldEnum]
+
+
+export const WhatsAppLogScalarFieldEnum = {
+  id: 'id',
+  phone: 'phone',
+  message: 'message',
+  messageType: 'messageType',
+  status: 'status',
+  appointmentId: 'appointmentId',
+  error: 'error',
+  sentAt: 'sentAt',
+  deliveredAt: 'deliveredAt',
+  readAt: 'readAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WhatsAppLogScalarFieldEnum = (typeof WhatsAppLogScalarFieldEnum)[keyof typeof WhatsAppLogScalarFieldEnum]
 
 
 export const SortOrder = {

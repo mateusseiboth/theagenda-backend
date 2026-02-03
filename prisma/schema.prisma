@@ -108,3 +108,45 @@ model Config {
 
     @@map("config")
 }
+
+enum WhatsAppMessageType {
+    APPOINTMENT_CONFIRMATION // Confirmação de agendamento
+    REMINDER // Lembrete 1 dia antes
+    TEST // Mensagem de teste
+    CUSTOM // Mensagem customizada
+
+    @@map("whatsapp_message_type")
+}
+
+enum WhatsAppMessageStatus {
+    PENDING // Aguardando envio
+    SENT // Enviada com sucesso
+    FAILED // Falha no envio
+    DELIVERED // Entregue
+    READ // Lida
+
+    @@map("whatsapp_message_status")
+}
+
+// Log de mensagens do WhatsApp
+model WhatsAppLog {
+    id            String                @id @default(uuid())
+    phone         String // Número de telefone destinatário
+    message       String // Conteúdo da mensagem
+    messageType   WhatsAppMessageType // Tipo de mensagem
+    status        WhatsAppMessageStatus @default(PENDING) // Status do envio
+    appointmentId String? // ID do agendamento relacionado (se aplicável)
+    error         String? // Mensagem de erro (se houver)
+    sentAt        DateTime? // Quando foi enviada
+    deliveredAt   DateTime? // Quando foi entregue
+    readAt        DateTime? // Quando foi lida
+    createdAt     DateTime              @default(now()) @db.Timestamptz(6)
+    updatedAt     DateTime              @updatedAt @db.Timestamptz(6)
+
+    @@index([phone])
+    @@index([appointmentId])
+    @@index([status])
+    @@index([messageType])
+    @@index([createdAt])
+    @@map("whatsapp_logs")
+}

@@ -57,3 +57,8 @@ export type Appointment = Prisma.AppointmentModel
  * 
  */
 export type Config = Prisma.ConfigModel
+/**
+ * Model WhatsAppLog
+ * 
+ */
+export type WhatsAppLog = Prisma.WhatsAppLogModel

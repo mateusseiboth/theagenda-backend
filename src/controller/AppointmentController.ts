@@ -6,6 +6,7 @@ import { UserDAO } from '../DAO/UserDAO';
 import { makePrismaOptions } from '../functions/makePrismaOptions';
 import { AppointmentModel } from '../model/AppointmentModel';
 import { AppointmentStatus, Prisma } from '../prisma/generated/client';
+import { WhatsAppService } from '../services/WhatsAppService';
 import { BaseController } from './BaseController';
 
 @logDecorator
@@ -82,6 +83,34 @@ export class AppointmentController extends BaseController {
         }
 
         const response = await this.DAO.create(this.data);
+
+        // Enviar mensagem de confirmação via WhatsApp
+        try {
+            const whatsappService = WhatsAppService.getInstance();
+            if (whatsappService.isClientReady()) {
+                const appointment = await this.DAO.getById(response.id);
+                if (appointment) {
+                    // Buscar dados do usuário e especialidade separadamente
+                    const user = await this.userDAO.getById(appointment.userId);
+                    const specialty = await this.specialtyDAO.getById(appointment.specialtyId);
+
+                    if (user?.phone && specialty) {
+                        await whatsappService.sendAppointmentConfirmation(
+                            user.phone,
+                            user.name || 'Cliente',
+                            specialty.name,
+                            appointment.startTime,
+                            specialty.avgDuration,
+                            appointment.id
+                        );
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Erro ao enviar mensagem de confirmação:', error);
+            // Não bloquear a criação do agendamento se falhar o envio da mensagem
+        }
+
         res.status(201).json(response);
     }
 
@@ -159,6 +188,36 @@ export class AppointmentController extends BaseController {
         this.data.modifiedBy = res.locals.userInfo?.id;
         this.data.updatedAt = this.getNewDate();
         const response = await this.DAO.update(this.data, id);
+
+        // Enviar mensagem de confirmação via WhatsApp se status mudou para CONFIRMED (confirmação manual pelo admin)
+        if (this.data.status === 'CONFIRMED') {
+            try {
+                const whatsappService = WhatsAppService.getInstance();
+                if (whatsappService.isClientReady()) {
+                    const appointment = await this.DAO.getById(response.id);
+                    if (appointment) {
+                        const user = await this.userDAO.getById(appointment.userId);
+                        const specialty = await this.specialtyDAO.getById(appointment.specialtyId);
+
+                        if (user?.phone && specialty) {
+                            // Usar método específico para confirmação manual pelo admin
+                            await whatsappService.sendAdminConfirmation(
+                                user.phone,
+                                user.name || 'Cliente',
+                                specialty.name,
+                                appointment.startTime,
+                                specialty.avgDuration,
+                                appointment.id
+                            );
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao enviar mensagem de confirmação:', error);
+                // Não bloquear a atualização do agendamento se falhar o envio da mensagem
+            }
+        }
+
         res.status(200).json({ data: response, paginate: { total: 1 } });
     }
 
