@@ -150,6 +150,8 @@ export class WhatsAppService {
                 } else if (messageText === 'não' || messageText === 'nao' || messageText === 'n') {
                     await this.handleConfirmation(phone, false);
                     await message.reply('❌ Agendamento cancelado. Se precisar reagendar, entre em contato conosco.');
+                } else {
+                    await message.reply('❓ Desculpe, não entendi sua mensagem. Por favor, responda com *SIM* para confirmar ou *NÃO* para cancelar seu agendamento.');
                 }
             } catch (error) {
                 console.error('Erro ao processar mensagem:', error);
@@ -159,30 +161,40 @@ export class WhatsAppService {
 
     private async handleConfirmation(phone: string, confirmed: boolean): Promise<void> {
         try {
-            // Buscar agendamentos pendentes de confirmação para este telefone
+            // Buscar agendamentos PENDENTES de confirmação para este telefone nas próximas 48h
             const appointments = await prismaClient.appointment.findMany({
                 where: {
                     user: {
                         phone: phone.startsWith('+') ? phone : `+${phone}`
                     },
-                    status: 'CONFIRMED',
+                    status: 'PENDING', // Buscar apenas agendamentos PENDENTES
                     startTime: {
                         gte: new Date(),
                         lte: new Date(Date.now() + 48 * 60 * 60 * 1000) // Próximas 48h
                     }
+                },
+                include: {
+                    specialty: true
                 },
                 orderBy: {
                     startTime: 'asc'
                 }
             });
 
-            if (appointments.length > 0) {
-                const status = confirmed ? 'CONFIRMED' : 'CANCELED';
+            if (appointments.length === 0) {
+                console.log(`📝 Nenhum agendamento pendente encontrado para ${phone}`);
+                return;
+            }
+
+            const status = confirmed ? 'CONFIRMED' : 'CANCELED';
+
+            // Atualizar TODOS os agendamentos pendentes
+            for (const appointment of appointments) {
                 await prismaClient.appointment.update({
-                    where: { id: appointments[0].id },
+                    where: { id: appointment.id },
                     data: { status }
                 });
-                console.log(`📝 Agendamento ${appointments[0].id} atualizado para ${status}`);
+                console.log(`📝 Agendamento ${appointment.id} (${appointment.specialty?.name}) atualizado para ${status}`);
             }
         } catch (error) {
             console.error('Erro ao processar confirmação:', error);
@@ -361,13 +373,7 @@ _Obrigado pela preferência!_ 😊
         duration: number,
         appointmentId?: string
     ): Promise<boolean> {
-        const formattedDate = new Intl.DateTimeFormat('pt-BR', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        }).format(date);
+        const formattedDate = dayjs(date).format('DD/MM/YYYY [às] HH:mm');
 
         const message = `
 ⏰ *Lembrete de Agendamento*
@@ -391,6 +397,34 @@ _Aguardamos sua confirmação!_ 😊
         return this.sendMessage(phone, message, 'REMINDER', appointmentId);
     }
 
+    async sendMultipleReminders(
+        phone: string,
+        clientName: string,
+        appointments: Array<{ specialty: string; date: Date; duration: number; id: string }>
+    ): Promise<boolean> {
+        let appointmentsList = '';
+        appointments.forEach((apt, index) => {
+            const formattedDate = dayjs(apt.date).format('DD/MM/YYYY [às] HH:mm');
+            appointmentsList += `\n${index + 1}. *${apt.specialty}*\n   📅 ${formattedDate} (${apt.duration} min)\n`;
+        });
+
+        const message = `
+⏰ *Lembrete de Agendamentos*
+
+Olá, ${clientName}! 
+
+Você tem *${appointments.length} agendamentos* marcados para amanhã! 📅
+${appointmentsList}
+❓ *Confirma sua presença em todos?*
+➡️ Responda *SIM* para confirmar todos
+➡️ Responda *NÃO* para cancelar todos
+
+_Aguardamos sua confirmação!_ 😊
+        `.trim();
+
+        return this.sendMessage(phone, message, 'REMINDER');
+    }
+
     async checkTomorrowAppointments(): Promise<void> {
         if (!this.isReady) {
             console.log('WhatsApp não está pronto para enviar lembretes');
@@ -411,34 +445,71 @@ _Aguardamos sua confirmação!_ 😊
                         gte: tomorrow,
                         lt: dayAfter
                     },
-                    status: {
-                        in: ['PENDING', 'CONFIRMED']
-                    },
+                    status: 'PENDING', // Apenas agendamentos PENDENTES precisam de confirmação
                     enabled: true,
                     active: true
                 },
                 include: {
                     user: true,
                     specialty: true
+                },
+                orderBy: {
+                    startTime: 'asc'
                 }
             });
 
-            console.log(`📞 Verificando ${appointments.length} agendamentos para amanhã...`);
+            console.log(`📞 Verificando ${appointments.length} agendamentos pendentes para amanhã...`);
+
+            // Agrupar agendamentos por usuário
+            const appointmentsByUser = new Map<string, typeof appointments>();
 
             for (const appointment of appointments) {
-                if (appointment.user?.phone && appointment.specialty) {
-                    await this.sendReminderAndConfirmation(
-                        appointment.user.phone,
-                        appointment.user.name || 'Cliente',
-                        appointment.specialty.name,
-                        appointment.startTime,
-                        appointment.specialty.avgDuration,
-                        appointment.id
-                    );
-
-                    // Aguardar 2 segundos entre mensagens para evitar spam
-                    await new Promise(resolve => setTimeout(resolve, 2000));
+                if (appointment.user?.phone) {
+                    const phone = appointment.user.phone;
+                    if (!appointmentsByUser.has(phone)) {
+                        appointmentsByUser.set(phone, []);
+                    }
+                    appointmentsByUser.get(phone)!.push(appointment);
                 }
+            }
+
+            // Enviar mensagens agrupadas por usuário
+            for (const [phone, userAppointments] of appointmentsByUser) {
+                const user = userAppointments[0].user!;
+
+                if (userAppointments.length === 1) {
+                    // Se tem apenas um agendamento, enviar mensagem simples
+                    const apt = userAppointments[0];
+                    if (apt.specialty) {
+                        await this.sendReminderAndConfirmation(
+                            phone,
+                            user.name || 'Cliente',
+                            apt.specialty.name,
+                            apt.startTime,
+                            apt.specialty.avgDuration,
+                            apt.id
+                        );
+                    }
+                } else {
+                    // Se tem múltiplos agendamentos, enviar mensagem agrupada
+                    const appointmentsData = userAppointments
+                        .filter(apt => apt.specialty)
+                        .map(apt => ({
+                            specialty: apt.specialty!.name,
+                            date: apt.startTime,
+                            duration: apt.specialty!.avgDuration,
+                            id: apt.id
+                        }));
+
+                    await this.sendMultipleReminders(
+                        phone,
+                        user.name || 'Cliente',
+                        appointmentsData
+                    );
+                }
+
+                // Aguardar 2 segundos entre mensagens para evitar spam
+                await new Promise(resolve => setTimeout(resolve, 2000));
             }
 
             console.log('✅ Lembretes enviados com sucesso!');
