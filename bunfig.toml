@@ -1,0 +1,17 @@
+preload = ["./src/config.ts"]
+sourcemap = "external"
+tsconfig = "tsconfig.json"
+
+[alias]
+"@controller/*" = "./src/controller/*"
+"@model/*" = "./src/model/*"
+"@interface/*" = "./src/interfaces/*"
+"@middleware/*" = "./src/middlewares/*"
+"@commons/*" = "./src/commons/*"
+"@routes/*" = "./src/http/routes/*"
+"@decorators/*" = "./src/decorators/*"
+"@schemas/*" = "./src/schemas/*"
+"@dao/*" = "./src/DAO/*"
+"@functions/*" = "./src/functions/*"
+"@views/*" = "./src/views/*"
+"@qualitysistemas/bun-commons" = "./src/bun/commons/index.ts"

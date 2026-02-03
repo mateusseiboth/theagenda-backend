@@ -1,0 +1,110 @@
+// Este é o schema do Prisma para o sistema de agendamento
+
+generator client {
+    provider        = "prisma-client"
+    previewFeatures = ["relationJoins", "postgresqlExtensions"]
+    output          = "../src/prisma/generated"
+}
+
+datasource db {
+    provider = "postgresql"
+}
+
+enum UserRole {
+    ADMIN // Administrador do sistema
+    USER // Usuário comum
+
+    @@map("user_role")
+}
+
+enum AppointmentStatus {
+    PENDING // Agendamento criado, aguardando confirmação
+    CONFIRMED // Cliente confirmou o agendamento
+    CANCELED // Agendamento cancelado
+    COMPLETED // Serviço concluído
+    NO_SHOW // Cliente não compareceu
+    LATE // Cliente está atrasado
+
+    @@map("appointment_status")
+}
+
+// Usuário do sistema (identificado pelo telefone)
+model User {
+    id        String   @id @default(uuid())
+    phone     String   @unique // Telefone é a chave única
+    name      String? // Nome opcional, preenchido na área admin
+    password  String? // Password apenas para admins
+    role      UserRole @default(USER)
+    enabled   Boolean  @default(true)
+    active    Boolean  @default(true)
+    createdAt DateTime @default(now()) @db.Timestamptz(6)
+    updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+    appointments Appointment[]
+
+    @@index([phone])
+    @@map("users")
+}
+
+// Especialidade (substitui Service)
+model Specialty {
+    id              String   @id @default(uuid())
+    name            String
+    description     String?
+    avgDuration     Int // Duração média em minutos
+    price           Float?
+    maxSimultaneous Int      @default(1) // Quantos agendamentos simultâneos são permitidos
+    enabled         Boolean  @default(true)
+    active          Boolean  @default(true)
+    createdAt       DateTime @default(now()) @db.Timestamptz(6)
+    updatedAt       DateTime @updatedAt @db.Timestamptz(6)
+    modifiedBy      String?
+
+    appointments Appointment[]
+
+    @@map("specialties")
+}
+
+// Agendamento
+model Appointment {
+    id          String            @id @default(uuid())
+    userId      String
+    specialtyId String
+    startTime   DateTime          @db.Timestamptz(6)
+    endTime     DateTime          @db.Timestamptz(6)
+    status      AppointmentStatus @default(PENDING)
+    notes       String? // Observações do cliente
+    adminNotes  String? // Observações internas (apenas admin)
+    enabled     Boolean           @default(true)
+    active      Boolean           @default(true)
+    createdAt   DateTime          @default(now()) @db.Timestamptz(6)
+    updatedAt   DateTime          @updatedAt @db.Timestamptz(6)
+    confirmedAt DateTime?         @db.Timestamptz(6)
+    canceledAt  DateTime?         @db.Timestamptz(6)
+    modifiedBy  String?
+
+    user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    specialty Specialty @relation(fields: [specialtyId], references: [id], onDelete: Cascade)
+
+    @@index([userId])
+    @@index([specialtyId])
+    @@index([startTime])
+    @@index([status])
+    @@map("appointments")
+}
+
+// Configurações do sistema
+model Config {
+    id                String   @id @default(uuid())
+    workStartHour     Int      @default(8) // Hora de início do expediente
+    workEndHour       Int      @default(18) // Hora de fim do expediente
+    workDays          Int[]    @default([1, 2, 3, 4, 5]) // Dias da semana (0=Dom, 6=Sáb)
+    slotDuration      Int      @default(30) // Duração do slot em minutos
+    maxAdvanceDays    Int      @default(30) // Máximo de dias para agendamento futuro
+    allowCancellation Boolean  @default(true)
+    cancellationHours Int      @default(24) // Horas mínimas antes para cancelamento
+    createdAt         DateTime @default(now()) @db.Timestamptz(6)
+    updatedAt         DateTime @updatedAt @db.Timestamptz(6)
+
+    @@map("config")
+}
